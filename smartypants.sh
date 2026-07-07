@@ -27,19 +27,22 @@ fi
 
 # Function to apply typographic fixes to a string/stream
 fix_typography() {
+    # Store a literal tab character safely for sed matching
+    local tab=$(printf '\t')
+
     sed -E \
         -e 's/\?\!/‽/g' \
         -e 's/\!\?/‽/g' \
         -e 's/\.\.\./…/g' \
         -e 's/---/—/g' \
         -e 's/--/–/g' \
-        -e "s/(^|[\s([-—])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\1’\2\3/gi" \
+        -e "s/(^|[ $tab([—-])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\1’\2\3/gi" \
         -e "s/([a-zA-Z0-9])'([a-zA-Z])/\1’\2/g" \
         -e "s/'([0-9]{2})/’\1/g" \
-        -e 's/(^|[-—([{"\s])'\''([a-zA-Z0-9])/\1‘\2/g' \
-        -e 's/([a-zA-Z0-9.,?!;:])'\''([)\]}"\s]|$)/\1’\2/g' \
-        -e 's/(^|[-—([{\s])"([a-zA-Z0-9‘])/\1“\2/g' \
-        -e 's/([a-zA-Z0-9.,?!;:’])"([)\]}"\s]|$)/\1”\2/g' \
+        -e "s/(^|[([{\"$tab —-])'([a-zA-Z0-9])/\1‘\2/g" \
+        -e "s/([a-zA-Z0-9.,?!;:])'([)\]}\"$tab —]|$)/\1’\2/g" \
+        -e "s/(^|[([{$tab —-])\"([a-zA-Z0-9‘])/\1“\2/g" \
+        -e "s/([a-zA-Z0-9.,?!;:’])\"([)\]}\"$tab —]|$)/\1”\2/g" \
         -e 's/ +([.,?!;’Material”—…‽])/ \1/g' \
         -e 's/ !/!/g' -e 's/ \?/?/g' \
         -e "s/([.?!‽]) +/\1${SPACE_REPLACEMENT}/g"
