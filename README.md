@@ -42,10 +42,10 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 3. Create a new **Quick Action** and name it SmartyPants.
 4. Click the blue input token at the very top and ensure it is filtered to receive only **Text** and **Rich text**. 
 3. Leave the source token set to **Quick Actions** (this is macOS shorthand for "any application" via the system Services framework).
-4. In the right-hand inspector panel under the **Details** tab, verify that both **Use as Quick Action -> Services Menu** and **Provide Output** are checked.
+4. In the right-hand inspector panel under the **Details** tab, verify that both **Use as Quick Action -> Services Menu** and **Provide Output** are checked. Optionally, add a keyboard shortcut in the "Run with" field.
 5. Search for and add a **Run AppleScript** action, then paste the script provided in this repository.
 6. Ensure the output is "AppleScript Result".
-7. Highlight any text on your Mac, right-click -> **Services** -> **SmartyPants** to instantly clean your typography in place!
+7. Highlight any text on your Mac, right-click -> **Services** -> **SmartyPants** (or use your chosen keyboard shortcut) to instantly clean your typography in place!
 
 > **Spacing Configuration:** The AppleScript shares the exact same typographic engine as the Bash variant. To toggle your sentence-spacing preferences, simply edit the configuration property at the absolute top of the AppleScript file:
 > * For classic double-spacing (Heathen Mode): `property useTwoSpaces : true`
@@ -55,15 +55,9 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 
 ---
 
-## Limitations
+## Limitations: Source Code & Markdown Warning (Read Before Use) ⚠️
 
-Because these scripts rely purely on regex pattern-matching substitutions via a highly-tuned macOS-compatible `sed` engine rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Use primarily on raw prose, markdown text nodes, or drafts.
-
----
-
-## Source Code & Markdown Warning (Read Before Use)
-
-Because **SmartyPants** relies entirely on raw, pattern-matching regex streams rather than an Abstract Syntax Tree (AST) parser, **it has zero contextual awareness.** It treats all files as a flat conveyor belt of bytes.
+Because these scripts rely purely on regex pattern-matching substitutions via a macOS-compatible `sed` engine rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Please use it as intended: on raw prose, markdown text nodes, or drafts.
 
 ### Why it WILL break source code:
 * **Syntax Mangling:** It will blindly convert standard straight quotes (`'` and `"`) inside string literals, attributes, or terminal commands into typographic curly quotes (`‘`/`“`), which will cause compilation errors or syntax crashes in almost every programming language.
@@ -82,6 +76,8 @@ This utility is completely blind to Markdown syntax blocks and HTML tags. Runnin
 ## For the curious (and regex averse) 🤓
 
 If you look at the raw `sed` pipeline shared across both `smartypants.sh` and the AppleScript block, it looks like a cat ran across a keyboard. However, it is actually a highly orchestrated, line-by-line typographic assembly line.
+
+![](cat-keyboard.gif)
 
 Before the engine runs, a variable named `${spaces}` is prepared behind the scenes. It evaluates to the raw, invisible hex bytes for a standard space, a tab character, and a web non-breaking space (`\x20\x09\xc2\xa0`). This ensures that no matter where you copied your text from, the engine will detect the whitespace.
 
@@ -104,13 +100,13 @@ Here is exactly what every single rule is doing, in order:
   Catches two-digit shorthand decades (like *'90s* or *'26*) and curls the apostrophe to the right (`’`), stopping it from mistakenly becoming a left quote.
 
 ### 3. Smart Quotes (Contextual Boundaries)
-* **`-e "s/(^|[([{\"${spaces}—-])'([a-zA-Z0-9])/\1‘\2/g"`**
+* **`-e "s/(^|[([{\\\"${spaces}—-])'([a-zA-Z0-9])/\\1‘\\2/g"`**
   **Left Single Quotes:** If an apostrophe is at the very beginning of a line (`^`), or immediately follows an opening bracket, opening quote, space, or dash, it is a word-*opening* boundary. It gets converted to an open single quote (`‘`).
-* **`-e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\"${spaces}—)]|$)/\1’\2/g"`**
-  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, or the end of the line (`$`), it is a word-*closing* boundary. It becomes a closed single quote (`’`). *Note: This character class explicitly includes the newly generated interrobang (`‽`) and ellipsis (`…`) so closing quotes curl correctly even when following complex punctuation.*
-* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’‽…])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
-  **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes.
-
+* **`-e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\\\"${spaces}—.,;:?!)]|$)/\\1’\\2/g"`**
+  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, dash, or trailing sentence punctuation, it is a word-*closing* boundary. It becomes a closed single quote (`’`). *Note: This explicitly accommodates logical/British-style punctuation variants where a comma or period sits outside the quote block (e.g., `'word'.` or `'word',`).*
+* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\\1“\\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’‽…])\"([]}\\\"${spaces}—.,;:?!)]|$)/\\1”\\2/g"`**
+  **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes, regardless of whether punctuation sits inside or outside the text bounds. This keeps both Brits and Yanks happy.
+  
 > **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
 
 ### 4. Whitespace Quality-of-Life Cleanups
@@ -133,6 +129,8 @@ Here is exactly what every single rule is doing, in order:
 
 ## Acknowledgments & Inspiration
 
-This project owes a profound debt of gratitude to **John Gruber** and his original 2003 implementation of **SmartyPants**. 
+This project owes a profound debt of gratitude to [John Gruber](https://daringfireball.net) and his [original 2003 implementation of SmartyPants](https://daringfireball.net).
 
 Gruber’s OG web publishing utility paved the way for modern web typography by proving that web writers shouldn't be held hostage by the limitations of the standard QWERTY keyboard layout. This utility stands on the shoulders of that classic implementation, adapting those core smart-punctuation principles into a nimble, dual-pronged workflow for modern CLI and macOS environments.
+
+Also, thanks for Markdown, John!
