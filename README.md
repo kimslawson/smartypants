@@ -53,6 +53,74 @@ Because these scripts rely purely on regex pattern-matching substitutions (`sed`
 
 ---
 
+## Source Code & Markdown Warning (Read Before Use)
+
+Because **SmartyPants** relies entirely on raw, pattern-matching regex streams (`sed` in Bash and `re` in Python/AppleScript) rather than an Abstract Syntax Tree (AST) parser, **it has zero contextual awareness.** It treats all files as a flat conveyor belt of bytes.
+
+### Why it WILL break source code:
+* **Syntax Mangling:** It will blindly convert standard straight quotes (`'` and `"`) inside string literals, attributes, or terminal commands into typographic curly quotes (`‘`/`“`), which will cause compilation errors or syntax crashes in almost every programming language.
+* **Destructive Whitespace Normalization:** The quality-of-life adjustments that strip sloppy spacing around punctuation and closing brackets (e.g., transforming `word )` into `word)`) will mercilessly collapse intentional, structural formatting inside code matrices, function arguments, or list objects (e.g., breaking `[ 1, 2, 3 ]` or `my_function( arg1 )`).
+
+### HTML & Markdown Elements
+This utility is completely blind to Markdown syntax blocks and HTML tags. Running it globally over a raw document will ruin inline HTML attributes (like `href="url"`) and smart-quote code expressions inside block indicators.
+
+### How to use it safely:
+1. **Isolate Text Drafts:** Restrict CLI scripts exclusively to raw, text-only prose directories, draft files, or specialized `/docs` folders.
+2. **Never Run Globally:** Avoid running the script blindly via recursive loops over an entire repository root (e.g., do not pipe a global `find .` command into the script).
+3. **Utilize the macOS Service Variant:** The macOS Quick Action/Shortcut is structurally the safest way to leverage this utility. Because it operates entirely on your **active manual text highlight**, you retain 100% granular control—allowing you to easily skip highlighting code fences, inline tags, or technical blocks while polishing your prose.
+
+---
+
+## For the curious (and regex averse) 🤓
+
+If you look at the raw `sed` pipeline in `smartypants.sh`, it looks like a cat ran across a keyboard. However, it is actually a highly orchestrated, line-by-line typographic assembly line.
+
+Before the engine runs, a variable named `${spaces}` is prepared behind the scenes. It evaluates to the raw, invisible hex bytes for a standard space, a tab character, and a web non-breaking space (`\x20\x09\xc2\xa0`). This ensures that no matter where you copied your text from, the engine will detect the whitespace.
+
+Here is exactly what every single rule is doing, in order:
+
+### 1. The Low-Hanging Fruit (Symbol Conversions)
+* **`-e 's/\?\!/‽/g'`** & **`-e 's/\!\?/‽/g'`**
+  Looks for literal `?!` or `!?` combinations and replaces them globally (`g`) with a beautiful, single-character interrobang (`‽`).
+* **`-e 's/\.\.\./…/g'`**
+  Finds three consecutive periods and swaps them for a professional, single-glyph typographic ellipsis (`…`).
+* **`-e 's/---/—/g'`** & **`-e 's/--/–/g'`**
+  Converts triple hyphens into long Em dashes (`—`) and double hyphens into medium En dashes (`–`).
+
+### 2. Slang & Contractions (The Single Quotes)
+* **`-e "s/(^|[${spaces}(—-])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\1’\2\3/gi"`**
+  Finds common abbreviated slang words that start with an apostrophe (like *'twas*, *'tis*, *'cause*, *'em*, *'round*). It ignores case (`i`) and ensures the apostrophe curls right (`’`) rather than left (`‘`).
+* **`-e "s/([a-zA-Z0-9])'([a-zA-Z])/\1’\2/g"`**
+  Standard contractions and possessives. If an apostrophe is sandwiched tightly between alphanumeric characters (like *don't*, *it's*, or *user's*), it forces it to become a curly right apostrophe (`’`).
+* **`-e "s/'([0-9]{2})/’\1/g"`**
+  Catches two-digit shorthand decades (like *'90s* or *'26*) and curls the apostrophe to the right (`’`), stopping it from mistakenly becoming a left quote.
+
+### 3. Smart Quotes (Contextual Boundaries)
+* **`-e "s/(^|[([{\"${spaces}—-])'([a-zA-Z0-9])/\1‘\2/g"`**
+  **Left Single Quotes:** If an apostrophe is at the very beginning of a line (`^`), or immediately follows an opening bracket, opening quote, space, or dash, it is a word-*opening* boundary. It gets converted to an open single quote (`‘`).
+* **`-e "s/([a-zA-Z0-9.,?!;:])'([]}\"${spaces}—)]|$)/\1’\2/g"`**
+  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, or the end of the line (`$`), it is a word-*closing* boundary. It becomes a closed single quote (`’`).
+* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
+  **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes.
+
+> 💡 **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
+
+### 4. Whitespace Quality-of-Life Cleanups
+* **`-e "s/[${spaces}]+([.,?!;’”—…‽])/\1/g"`**
+  Scans the text for sloppy, accidental spaces sitting right before commas, periods, or other primary punctuation marks, and obliterates them.
+* **`-e 's/ !/!/g' -e 's/ \?/?/g' -e 's/ ‽/‽/g'`**
+  A strict, foolproof safety pass to make sure no loose spaces remain attached to the front of exclamation points, question marks, or interrobangs.
+* **`-e "s/[${spaces}]+([]})])/\1/g"`**
+  **Bracket Closer Rule:** Automatically finds any spaces floating right before a closing parenthesis `)`, closing bracket `]`, or closing brace `}`, collapsing them completely (e.g., changing `(text )` to `(text)`).
+
+### 5. Sentence Normalization (The Grand Finale)
+* **`-e "s/([.?!‽])[${spaces}]+([^])}‘“'\"[:cntrl:]])/\1${SPACE_REPLACEMENT}\2/g"`**
+  **The Spacer Normalizer:** Looks for sentence-ending punctuation (`.?!‽`) followed by any amount of whitespace. It normalizes that whitespace to match your preference (either 1 space, or 2 spaces if using `--two-space`). It uses a negated block `[^])}...]` to ensure it **only** normalizes spaces if the sentence is continuing into a new word, preventing it from blowing up spaces inside parenthetical boundaries.
+* **`-e "s/([.?!‽])[${spaces}]+([]})])/\1\2/g"`**
+**The Punctuation Smasher:** If sentence-ending punctuation is immediately followed by trailing whitespace and a closing paren/bracket, this rule aggressively deletes that space, smashing the punctuation flush against the inner lip of the closing bracket (e.g., transforming `(heathen!! )` to `(heathen!!)`).
+
+---
+
 ## Acknowledgments & Inspiration
 
 This project owes a profound debt of gratitude to **John Gruber** and his original 2003 implementation of **SmartyPants**. 
