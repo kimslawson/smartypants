@@ -51,6 +51,8 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 > * For classic double-spacing (Heathen Mode): `property useTwoSpaces : true`
 > * For modern single-spacing (Civilized Mode): `property useTwoSpaces : false`
 
+![](shortcuts.png)
+
 ---
 
 ## Limitations
