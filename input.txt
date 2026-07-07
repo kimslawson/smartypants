@@ -1,1 +1,7 @@
-This is a -- test -- of the emergency broadcast system ?! There should be two periods after this (if you're a heathen!! )
+'Twas a sharp January night, and 'tis said by some that the political shifts of '98 changed everything. We walked 'round the old harbor town 'cause there was no other way 'til dawn. The local sailors were sharing old stories, and we sat on the cold deck just to watch 'em.
+
+The industrial shifts of the era--often called the machine age---completely altered daily life. It's a reality that wasn't unique to any single country's economy; rather, it was felt globally.
+
+As Charles Dickens wrote in his classic tale, "It was the best of times, it was the worst of times." But did anyone truly understand the captain's final shout, "What do you mean by that?!"  The ultimate answers were lost...
+
+Some structural layouts require strict spacing padding (like functional blocks or structural margins ) . However, standard prose nodes should have clean margins .  This sentence has irregular trailing spacing.   This one has even more.    Will they normalize?
