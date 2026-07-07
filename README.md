@@ -104,13 +104,13 @@ Here is exactly what every single rule is doing, in order:
   Catches two-digit shorthand decades (like *'90s* or *'26*) and curls the apostrophe to the right (`’`), stopping it from mistakenly becoming a left quote.
 
 ### 3. Smart Quotes (Contextual Boundaries)
-* **`-e "s/(^|[([{\"${spaces}—-])'([a-zA-Z0-9])/\1‘\2/g"`**
+* **`-e "s/(^|[([{\\\"${spaces}—-])'([a-zA-Z0-9])/\\1‘\\2/g"`**
   **Left Single Quotes:** If an apostrophe is at the very beginning of a line (`^`), or immediately follows an opening bracket, opening quote, space, or dash, it is a word-*opening* boundary. It gets converted to an open single quote (`‘`).
-* **`-e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\"${spaces}—)]|$)/\1’\2/g"`**
-  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, or the end of the line (`$`), it is a word-*closing* boundary. It becomes a closed single quote (`’`). *Note: This character class explicitly includes the newly generated interrobang (`‽`) and ellipsis (`…`) so closing quotes curl correctly even when following complex punctuation.*
-* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’‽…])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
-  **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes.
-
+* **`-e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\\\"${spaces}—.,;:?!)]|$)/\\1’\\2/g"`**
+  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, dash, or trailing sentence punctuation, it is a word-*closing* boundary. It becomes a closed single quote (`’`). *Note: This explicitly accommodates logical/British-style punctuation variants where a comma or period sits outside the quote block (e.g., `'word'.` or `'word',`).*
+* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\\1“\\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’‽…])\"([]}\\\"${spaces}—.,;:?!)]|$)/\\1”\\2/g"`**
+  **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes, regardless of whether punctuation sits inside or outside the text bounds. This keeps both Brits and Yanks happy.
+  
 > **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
 
 ### 4. Whitespace Quality-of-Life Cleanups
