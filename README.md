@@ -106,24 +106,26 @@ Here is exactly what every single rule is doing, in order:
 ### 3. Smart Quotes (Contextual Boundaries)
 * **`-e "s/(^|[([{\"${spaces}—-])'([a-zA-Z0-9])/\1‘\2/g"`**
   **Left Single Quotes:** If an apostrophe is at the very beginning of a line (`^`), or immediately follows an opening bracket, opening quote, space, or dash, it is a word-*opening* boundary. It gets converted to an open single quote (`‘`).
-* **`-e "s/([a-zA-Z0-9.,?!;:])'([]}\"${spaces}—)]|$)/\1’\2/g"`**
-  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, or the end of the line (`$`), it is a word-*closing* boundary. It becomes a closed single quote (`’`).
-* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
+* **`-e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\"${spaces}—)]|$)/\1’\2/g"`**
+  **Right Single Quotes:** If an apostrophe is right after a word or punctuation mark, and is followed by a closing bracket, closing quote, space, or the end of the line (`$`), it is a word-*closing* boundary. It becomes a closed single quote (`’`). *Note: This character class explicitly includes the newly generated interrobang (`‽`) and ellipsis (`…`) so closing quotes curl correctly even when following complex punctuation.*
+* **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’‽…])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
   **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes.
 
 > **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
 
 ### 4. Whitespace Quality-of-Life Cleanups
-* **`-e "s/[${spaces}]+([.,?!;’”—…‽])/\1/g"`**
+* **`-e "s/[${spaces}]+([.,?!;—…‽])/\1/g"`**
   Scans the text for sloppy, accidental spaces sitting right before commas, periods, or other primary punctuation marks, and obliterates them.
+* **`-e "s/[${spaces}]+([’”])([^a-zA-Z0-9]|$)/\1\2/g"`**
+  **The Contraction Protector Rule:** Strips extra spaces before curly quotation marks, but *only* if the quote isn't immediately followed by an alphanumeric character. This crucial check allows the engine to clear messy text layout spacing without accidentally swallowing spaces before leading slang shortcuts (preserving things like `and ’tis` instead of destroying it into `and’tis`).
 * **`-e 's/ !/!/g' -e 's/ \?/?/g' -e 's/ ‽/‽/g'`**
   A strict, foolproof safety pass to make sure no loose spaces remain attached to the front of exclamation points, question marks, or interrobangs.
 * **`-e "s/[${spaces}]+([]})])/\1/g"`**
   **Bracket Closer Rule:** Automatically finds any spaces floating right before a closing parenthesis `)`, closing bracket `]`, or closing brace `}`, collapsing them completely (e.g., changing `(text )` to `(text)`).
 
 ### 5. Sentence Normalization (The Grand Finale)
-* **`-e "s/([.?!‽])[${spaces}]+([^])}‘“'\"[:cntrl:]])/\1${SPACE_REPLACEMENT}\2/g"`**
-  **The Spacer Normalizer:** Looks for sentence-ending punctuation (`.?!‽`) followed by any amount of whitespace. It normalizes that whitespace to match your preference (either 1 space, or 2 spaces). It uses a negated block `[^])}...]` to ensure it **only** normalizes spaces if the sentence is continuing into a new word, preventing it from blowing up spaces inside parenthetical boundaries.
+* **`-e "s/([.?!‽][]'\"’”)]*)[${spaces}]+([^])}‘“'\"[:cntrl:]])/\1${SPACE_REPLACEMENT}\2/g"`**
+  **The Spacer Normalizer:** Looks for sentence-ending punctuation (`.?!‽`) and normalizes trailing whitespace to match your preference (either 1 space, or 2 spaces). The inclusion of the nested `[]'\"’”)]*` group allows the engine to swallow any trailing quotation marks or closing brackets that sit directly on the lip of a sentence boundary. This prevents dialogue blocks (like `“Stop!”  He yelled.`) from breaking or intercepting the engine's core normalization logic.
 * **`-e "s/([.?!‽])[${spaces}]+([]})])/\1\2/g"`**
   **The Punctuation Smasher:** If sentence-ending punctuation is immediately followed by trailing whitespace and a closing paren/bracket, this rule aggressively deletes that space, smashing the punctuation flush against the inner lip of the closing bracket (e.g., transforming `(heathen!! )` to `(heathen!!)`).
 
