@@ -103,7 +103,7 @@ Here is exactly what every single rule is doing, in order:
 * **`-e "s/(^|[([{${spaces}—-])\"([a-zA-Z0-9‘])/\1“\2/g"`** & **`-e "s/([a-zA-Z0-9.,?!;:’])\"([]}\"${spaces}—)]|$)/\1”\2/g"`**
   **Double Quotes:** Applies the exact same boundary philosophy as above, turning standard straight double quotes (`"`) into elegant left-opening (`“`) and right-closing (`”`) typographic double quotes.
 
-> 💡 **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
+> **The macOS Quirks Mode:** You will notice closing brackets at the very beginning of character groups (like `[]}]`). Because macOS `sed` completely ignores standard backslash escapes inside character classes, pulling the closing bracket `]` to the absolute front of the array is a mandatory hack to make `sed` treat it as a literal character rather than an instruction to close the regex group early.
 
 ### 4. Whitespace Quality-of-Life Cleanups
 * **`-e "s/[${spaces}]+([.,?!;’”—…‽])/\1/g"`**
