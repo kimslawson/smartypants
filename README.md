@@ -127,6 +127,8 @@ Here is exactly what every single rule is doing, in order:
 
 ## Acknowledgments & Inspiration
 
-This project owes a profound debt of gratitude to **[John Gruber]([url](https://daringfireball.net))** and his [original 2003 implementation of SmartyPants]([url](https://daringfireball.net)). 
+This project owes a profound debt of gratitude to [John Gruber](https://daringfireball.net) and his [original 2003 implementation of SmartyPants](https://daringfireball.net).
 
 Gruber’s OG web publishing utility paved the way for modern web typography by proving that web writers shouldn't be held hostage by the limitations of the standard QWERTY keyboard layout. This utility stands on the shoulders of that classic implementation, adapting those core smart-punctuation principles into a nimble, dual-pronged workflow for modern CLI and macOS environments.
+
+Also, thanks for Markdown, John!
