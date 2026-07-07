@@ -1,6 +1,6 @@
 on run {input, parameters}
-	-- ⚙️ CONFIGURATION: Set to true for two spaces after sentences, false for one space.
-	set useTwoSpaces to true
+	-- CONFIGURATION: Set to true for two spaces after sentences, false for one space.
+	set useTwoSpaces to false
 	
 	-- Capture the incoming highlighted text
 	set currentText to input as string
