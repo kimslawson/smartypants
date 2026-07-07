@@ -77,6 +77,8 @@ This utility is completely blind to Markdown syntax blocks and HTML tags. Runnin
 
 If you look at the raw `sed` pipeline shared across both `smartypants.sh` and the AppleScript block, it looks like a cat ran across a keyboard. However, it is actually a highly orchestrated, line-by-line typographic assembly line.
 
+![](cat-keyboard.gif)
+
 Before the engine runs, a variable named `${spaces}` is prepared behind the scenes. It evaluates to the raw, invisible hex bytes for a standard space, a tab character, and a web non-breaking space (`\x20\x09\xc2\xa0`). This ensures that no matter where you copied your text from, the engine will detect the whitespace.
 
 Here is exactly what every single rule is doing, in order:
