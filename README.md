@@ -43,19 +43,21 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 4. Set the output to replace the selected text.
 5. Highlight any text in macOS, right-click -> **Services** -> **SmartyPants** to instantly clean your text.
 
-*(Note: The macOS script defaults to Civilized Mode. To unlock Heathen Mode on macOS, edit the Python snippet inside the AppleScript to replace `r'\\1 '` with `r'\\1  '` near the bottom).*
+> **Spacing Configuration:** The AppleScript shares the exact same typographic engine as the Bash variant. To toggle your sentence-spacing preferences, simply edit the configuration property at the absolute top of the AppleScript file:
+> * For classic double-spacing (Heathen Mode): `property useTwoSpaces : true`
+> * For modern single-spacing (Civilized Mode): `property useTwoSpaces : false`
 
 ---
 
 ## Limitations
 
-Because these scripts rely purely on regex pattern-matching substitutions (`sed` in Bash, `re` in Python/AppleScript) rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Use primarily on raw prose, markdown text nodes, or drafts.
+Because these scripts rely purely on regex pattern-matching substitutions via a highly-tuned macOS-compatible `sed` engine rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Use primarily on raw prose, markdown text nodes, or drafts.
 
 ---
 
 ## Source Code & Markdown Warning (Read Before Use)
 
-Because **SmartyPants** relies entirely on raw, pattern-matching regex streams (`sed` in Bash and `re` in Python/AppleScript) rather than an Abstract Syntax Tree (AST) parser, **it has zero contextual awareness.** It treats all files as a flat conveyor belt of bytes.
+Because **SmartyPants** relies entirely on raw, pattern-matching regex streams rather than an Abstract Syntax Tree (AST) parser, **it has zero contextual awareness.** It treats all files as a flat conveyor belt of bytes.
 
 ### Why it WILL break source code:
 * **Syntax Mangling:** It will blindly convert standard straight quotes (`'` and `"`) inside string literals, attributes, or terminal commands into typographic curly quotes (`‘`/`“`), which will cause compilation errors or syntax crashes in almost every programming language.
@@ -73,7 +75,7 @@ This utility is completely blind to Markdown syntax blocks and HTML tags. Runnin
 
 ## For the curious (and regex averse) 🤓
 
-If you look at the raw `sed` pipeline in `smartypants.sh`, it looks like a cat ran across a keyboard. However, it is actually a highly orchestrated, line-by-line typographic assembly line.
+If you look at the raw `sed` pipeline shared across both `smartypants.sh` and the AppleScript block, it looks like a cat ran across a keyboard. However, it is actually a highly orchestrated, line-by-line typographic assembly line.
 
 Before the engine runs, a variable named `${spaces}` is prepared behind the scenes. It evaluates to the raw, invisible hex bytes for a standard space, a tab character, and a web non-breaking space (`\x20\x09\xc2\xa0`). This ensures that no matter where you copied your text from, the engine will detect the whitespace.
 
@@ -115,9 +117,9 @@ Here is exactly what every single rule is doing, in order:
 
 ### 5. Sentence Normalization (The Grand Finale)
 * **`-e "s/([.?!‽])[${spaces}]+([^])}‘“'\"[:cntrl:]])/\1${SPACE_REPLACEMENT}\2/g"`**
-  **The Spacer Normalizer:** Looks for sentence-ending punctuation (`.?!‽`) followed by any amount of whitespace. It normalizes that whitespace to match your preference (either 1 space, or 2 spaces if using `--two-space`). It uses a negated block `[^])}...]` to ensure it **only** normalizes spaces if the sentence is continuing into a new word, preventing it from blowing up spaces inside parenthetical boundaries.
+  **The Spacer Normalizer:** Looks for sentence-ending punctuation (`.?!‽`) followed by any amount of whitespace. It normalizes that whitespace to match your preference (either 1 space, or 2 spaces). It uses a negated block `[^])}...]` to ensure it **only** normalizes spaces if the sentence is continuing into a new word, preventing it from blowing up spaces inside parenthetical boundaries.
 * **`-e "s/([.?!‽])[${spaces}]+([]})])/\1\2/g"`**
-**The Punctuation Smasher:** If sentence-ending punctuation is immediately followed by trailing whitespace and a closing paren/bracket, this rule aggressively deletes that space, smashing the punctuation flush against the inner lip of the closing bracket (e.g., transforming `(heathen!! )` to `(heathen!!)`).
+  **The Punctuation Smasher:** If sentence-ending punctuation is immediately followed by trailing whitespace and a closing paren/bracket, this rule aggressively deletes that space, smashing the punctuation flush against the inner lip of the closing bracket (e.g., transforming `(heathen!! )` to `(heathen!!)`).
 
 ---
 
