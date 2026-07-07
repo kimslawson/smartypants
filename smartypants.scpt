@@ -1,5 +1,5 @@
 on run {input, parameters}
-	-- CONFIGURATION: Set to true for two spaces after sentences, false for one space.
+	-- ⚙️ CONFIGURATION: Set to true for two spaces after sentences, false for one space.
 	set useTwoSpaces to true
 	
 	-- Capture the incoming highlighted text
@@ -9,11 +9,14 @@ on run {input, parameters}
 	set spaceReplacement to " "
 	if useTwoSpaces then set spaceReplacement to "  "
 	
-	-- Build the exact unified macOS sed pipeline
-	set shellCommand to "spaces=$(printf '\\x20\\x09\\xc2\\xa0')
+	-- 1. Build the environment and variables BEFORE the pipe
+	set shellEnv to "export LC_ALL=en_US.UTF-8
+spaces=$(printf '\\x20\\x09\\xc2\\xa0')
 space_rep=" & quoted form of spaceReplacement & "
-
-sed -E \\
+"
+	
+	-- 2. The sed engine command
+	set sedCommand to "sed -E \\
     -e 's/\\?\\!/‽/g' \\
     -e 's/\\!\\?/‽/g' \\
     -e 's/\\.\\.\\./…/g' \\
@@ -32,9 +35,11 @@ sed -E \\
     -e \"s/([.?!‽])[${spaces}]+([^])}‘“'\\\"[:cntrl:]])/\\1${space_rep}\\2/g\" \\
     -e \"s/([.?!‽])[${spaces}]+([]})])/\\1\\2/g\""
 	
-	-- Stream the text safely into the command via printf and capture the result
-	set cleanedText to do shell script "printf '%s' " & quoted form of currentText & " | " & shellCommand
+	-- 3. Combine it all: Environment -> Print text -> Pipe to Sed
+	set fullCommand to shellEnv & "printf '%s' " & quoted form of currentText & " | " & sedCommand
 	
-	-- Return the transformed text directly back to Shortcuts to replace it in place
+	-- Execute and return directly to Shortcuts
+	set cleanedText to do shell script fullCommand
+	
 	return cleanedText
 end run
