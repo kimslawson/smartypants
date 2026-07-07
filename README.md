@@ -25,12 +25,14 @@ Perfect for command-line efficiency, treating text processing like a fast convey
 By default, the script normalizes all sentence endings (`.`, `?`, `!`, and `‽`) to use exactly **one space**.
 ```bash
 echo "Stop!  Who goes there?!  Wait..." | ./smartypants.sh
-# Output: Stop! Who goes there‽ Wait…```
+# Output: Stop! Who goes there‽ Wait…
+```
 
 **Heathen Mode (--two-space):**
 For traditionalists or specific style guides, passing the --two-space flag forces exactly two spaces after all sentence-ending punctuation (including the interrobang).
 ```bash
-./smartypants.sh --two-space input.txt > output.txt```
+./smartypants.sh --two-space input.txt > output.txt
+```
 
 ### 2. macOS Quick Action / Shortcut
 Bring typographic fixes to any text field across macOS via a Services menu or keyboard shortcut.
