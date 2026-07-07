@@ -42,10 +42,10 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 3. Create a new **Quick Action** and name it SmartyPants.
 4. Click the blue input token at the very top and ensure it is filtered to receive only **Text** and **Rich text**. 
 3. Leave the source token set to **Quick Actions** (this is macOS shorthand for "any application" via the system Services framework).
-4. In the right-hand inspector panel under the **Details** tab, verify that both **Use as Quick Action -> Services Menu** and **Provide Output** are checked.
+4. In the right-hand inspector panel under the **Details** tab, verify that both **Use as Quick Action -> Services Menu** and **Provide Output** are checked. Optionally, add a keyboard shortcut in the "Run with" field.
 5. Search for and add a **Run AppleScript** action, then paste the script provided in this repository.
 6. Ensure the output is "AppleScript Result".
-7. Highlight any text on your Mac, right-click -> **Services** -> **SmartyPants** to instantly clean your typography in place!
+7. Highlight any text on your Mac, right-click -> **Services** -> **SmartyPants** (or use your chosen keyboard shortcut) to instantly clean your typography in place!
 
 > **Spacing Configuration:** The AppleScript shares the exact same typographic engine as the Bash variant. To toggle your sentence-spacing preferences, simply edit the configuration property at the absolute top of the AppleScript file:
 > * For classic double-spacing (Heathen Mode): `property useTwoSpaces : true`
