@@ -24,18 +24,19 @@ space_rep=" & quoted form of spaceReplacement & "
     -e 's/--/–/g' \\
     -e \"s/(^|[${spaces}(—-])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\\1’\\2\\3/gi\" \\
     -e \"s/([a-zA-Z0-9])'([a-zA-Z])/\\1’\\2/g\" \\
-    -e \"s/'([0-9]{2})/\\1’\\1/g\" \\
+    -e \"s/'([0-9]{2})/’\\1/g\" \\
     -e \"s/(^|[([{\\\"${spaces}—-])'([a-zA-Z0-9])/\\1‘\\2/g\" \\
-    -e \"s/([a-zA-Z0-9.,?!;:])'([]}\\\"${spaces}—)]|$)/\\1’\\2/g\" \\
+    -e \"s/([a-zA-Z0-9.,?!;:‽…])'([]}\\\"${spaces}—)]|$)/\\1’\\2/g\" \\
     -e \"s/(^|[([{${spaces}—-])\\\"([a-zA-Z0-9‘])/\\1“\\2/g\" \\
-    -e \"s/([a-zA-Z0-9.,?!;:’])\\\"([]}\\\"${spaces}—)]|$)/\\1”\\2/g\" \\
-    -e \"s/[${spaces}]+([.,?!;’”—…‽])/\\1/g\" \\
+    -e \"s/([a-zA-Z0-9.,?!;:’\\‽…])\\\"([]}\\\"${spaces}—)]|$)/\\1”\\2/g\" \\
+    -e \"s/[${spaces}]+([.,?!;—…\\‽])/\\1/g\" \\
+    -e \"s/[${spaces}]+([’”])([^a-zA-Z0-9]|$)/\\1\\2/g\" \\
     -e 's/ !/!/g' -e 's/ \\?/?/g' -e 's/ ‽/‽/g' \\
     -e \"s/[${spaces}]+([]})])/\\1/g\" \\
-    -e \"s/([.?!‽])[${spaces}]+([^])}‘“'\\\"[:cntrl:]])/\\1${space_rep}\\2/g\" \\
+    -e \"s/([.?!\\‽][]'\\\"’”)]*)[${spaces}]+([^])}‘“'\\\"[:cntrl:]])/\\1${space_rep}\\2/g\" \\
     -e \"s/([.?!‽])[${spaces}]+([]})])/\\1\\2/g\""
 	
-	-- 3. Combine it all: Environment -> Print text -> Pipe to Sed
+	-- 3. Combine it all
 	set fullCommand to shellEnv & "printf '%s' " & quoted form of currentText & " | " & sedCommand
 	
 	-- Execute and return directly to Shortcuts
