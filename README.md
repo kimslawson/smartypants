@@ -55,15 +55,9 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 
 ---
 
-## Limitations
+## Limitations: Source Code & Markdown Warning (Read Before Use) ⚠️
 
-Because these scripts rely purely on regex pattern-matching substitutions via a highly-tuned macOS-compatible `sed` engine rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Use primarily on raw prose, markdown text nodes, or drafts.
-
----
-
-## Source Code & Markdown Warning (Read Before Use)
-
-Because **SmartyPants** relies entirely on raw, pattern-matching regex streams rather than an Abstract Syntax Tree (AST) parser, **it has zero contextual awareness.** It treats all files as a flat conveyor belt of bytes.
+Because these scripts rely purely on regex pattern-matching substitutions via a macOS-compatible `sed` engine rather than an abstract syntax tree (AST) parser, **they do not recognize code blocks or HTML tags.** Running these scripts directly over raw Markdown files containing code or HTML files with inline attributes will "smart-quote" your code syntax and break it. Please use it as intended: on raw prose, markdown text nodes, or drafts.
 
 ### Why it WILL break source code:
 * **Syntax Mangling:** It will blindly convert standard straight quotes (`'` and `"`) inside string literals, attributes, or terminal commands into typographic curly quotes (`‘`/`“`), which will cause compilation errors or syntax crashes in almost every programming language.
