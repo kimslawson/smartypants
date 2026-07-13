@@ -28,10 +28,20 @@ echo "Stop!  Who goes there?!  Wait..." | ./smartypants.sh
 # Output: Stop! Who goes there‽ Wait…
 ```
 
-**Heathen Mode (--two-space):**
+**Heathen Mode (`--two-space`):**
 For traditionalists or specific style guides, passing the --two-space flag forces exactly two spaces after all sentence-ending punctuation (including the interrobang).
 ```bash
 ./smartypants.sh --two-space input.txt > output.txt
+```
+
+**Stupefy Mode (`-s` / `--stupefy`):**
+Reverses typographic characters back to baseline typewriter ASCII. Essential for preparing copy for code blocks, terminal operations, or strict database inputs where rich Unicode causes syntax errors.
+* Reverts `‽` to `?!`, `…` to `...`, `—` to `---`, and `–` to `--`.
+* Flattens `‘`, `’`, and `‘` into `'`.
+* Flattens `“` and `”` into `"`.
+```bash
+echo "“But, why not‽” she exclaimed." | ./smartypants.sh
+# Output "But, why not?!" she exclaimed.
 ```
 
 ### 2. macOS Quick Action / Shortcut
@@ -43,13 +53,15 @@ Bring typographic fixes to any text field across macOS via a Services menu or ke
 4. Click the blue input token at the very top and ensure it is filtered to receive only **Text** and **Rich text**. 
 3. Leave the source token set to **Quick Actions** (this is macOS shorthand for "any application" via the system Services framework).
 4. In the right-hand inspector panel under the **Details** tab, verify that both **Use as Quick Action -> Services Menu** and **Provide Output** are checked. Optionally, add a keyboard shortcut in the "Run with" field.
-5. Search for and add a **Run AppleScript** action, then paste the script provided in this repository.
+5. Search for and add a **Run AppleScript** action, then paste the contents of the smartypants.scpt script provided in this repository.
 6. Ensure the output is "AppleScript Result".
 7. Highlight any text on your Mac, right-click -> **Services** -> **SmartyPants** (or use your chosen keyboard shortcut) to instantly clean your typography in place!
 
 > **Spacing Configuration:** The AppleScript shares the exact same typographic engine as the Bash variant. To toggle your sentence-spacing preferences, simply edit the configuration property at the absolute top of the AppleScript file:
 > * For classic double-spacing (Heathen Mode): `property useTwoSpaces : true`
 > * For modern single-spacing (Civilized Mode): `property useTwoSpaces : false`
+
+You can add a second Shortcut (and assign it a key combination) to remove smart punctuation. Follow the steps above, naming it “Stupefy Text” in step 3 and substituting stupefy.scpt in step 5.
 
 ![](shortcuts.png)
 
