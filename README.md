@@ -12,6 +12,7 @@ It handles curly quotes, proper dashes, ellipses, word-omission contractions, ha
 * **Whitespacing QOL:** Automatically trims accidental spaces trailing right before punctuation marks.
 * **Sentence Spacing Normalization:** Cleans up irregular spacing after sentences, supporting both modern single-space standards and classic double-space typography.
 * **Idempotent:** Safe to run repeatedly on the same block of text without risking recursion or broken formatting.
+* **Stupefy Mode:** Runs the whole conveyor belt in reverse (`-s`), downgrading smart typography back into dumb, plain-ASCII text for contexts that demand it.
 * **Easter Egg:** Converts `!?` or `?!` into a glorious interrobang (`‽`).
 
 ---
@@ -34,14 +35,11 @@ For traditionalists or specific style guides, passing the --two-space flag force
 ./smartypants.sh --two-space input.txt > output.txt
 ```
 
-**Stupefy Mode (`-s` / `--stupefy`):**
-Reverses typographic characters back to baseline typewriter ASCII. Essential for preparing copy for code blocks, terminal operations, or strict database inputs where rich Unicode causes syntax errors.
-* Reverts `‽` to `?!`, `…` to `...`, `—` to `---`, and `–` to `--`.
-* Flattens `‘`, `’`, and `‘` into `'`.
-* Flattens `“` and `”` into `"`.
+**Stupefy Mode (-s / --stupefy / --stupify):**
+Runs the entire machine in reverse, making text dumb again. Curly quotes flatten back into straight quotes, em/en dashes decompose into `---`/`--`, ellipses expand back into `...`, interrobangs split back into `?!`, and non-breaking spaces become plain spaces. Handy when pasting prose into code, config files, or anywhere fancy glyphs would cause trouble. Like its smarter sibling, it is idempotent — and a full round trip (`-s`, then the default pass) lands you right back on typographically correct text.
 ```bash
-echo "“But, why not‽” she exclaimed." | ./smartypants.sh
-# Output "But, why not?!" she exclaimed.
+echo "Stop! Who goes there‽ Wait…" | ./smartypants.sh -s
+# Output: Stop! Who goes there?! Wait...
 ```
 
 ### 2. macOS Quick Action / Shortcut
