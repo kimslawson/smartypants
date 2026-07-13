@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Default setting (1 space)
+# Default settings (smart mode, 1 space)
+MODE="smart"
 SPACE_REPLACEMENT=" "
 INPUT_FILE=""
 
@@ -9,6 +10,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --two-space)
             SPACE_REPLACEMENT="  "
+            shift
+            ;;
+        -s|--stupify|--stupefy)
+            MODE="stupefy"
             shift
             ;;
         -*)
@@ -48,9 +53,33 @@ fix_typography() {
         -e "s/([.?!‽])[${spaces}]+([]})])/\1\\2/g"
 }
 
+# Function to reverse the typographic fixes, stupefying smart glyphs
+# (and non-breaking spaces) back into their dumb ASCII equivalents
+stupefy_typography() {
+    local nbsp=$(printf '\xc2\xa0')
+
+    sed -E \
+        -e 's/‽/?!/g' \
+        -e 's/…/.../g' \
+        -e 's/—/---/g' \
+        -e 's/–/--/g' \
+        -e "s/‘/'/g" \
+        -e "s/’/'/g" \
+        -e 's/“/"/g' \
+        -e 's/”/"/g' \
+        -e "s/${nbsp}/ /g"
+}
+
+# Select the processing direction
+if [ "$MODE" = "stupefy" ]; then
+    PROCESS=stupefy_typography
+else
+    PROCESS=fix_typography
+fi
+
 # Process file or stdin
 if [ -n "$INPUT_FILE" ] && [ -f "$INPUT_FILE" ]; then
-    fix_typography < "$INPUT_FILE"
+    "$PROCESS" < "$INPUT_FILE"
 else
-    fix_typography
+    "$PROCESS"
 fi
