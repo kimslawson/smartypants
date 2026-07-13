@@ -35,7 +35,7 @@ For traditionalists or specific style guides, passing the --two-space flag force
 ./smartypants.sh --two-space input.txt > output.txt
 ```
 
-**Stupefy Mode (-s / --stupefy / --stupify):**
+**Stupefy Mode (`-s` / `--stupefy` / `--stupify`):**
 Runs the entire machine in reverse, making text dumb again. Curly quotes flatten back into straight quotes, em/en dashes decompose into `---`/`--`, ellipses expand back into `...`, interrobangs split back into `?!`, and non-breaking spaces become plain spaces. Handy when pasting prose into code, config files, or anywhere fancy glyphs would cause trouble. Like its smarter sibling, it is idempotent — and a full round trip (`-s`, then the default pass) lands you right back on typographically correct text.
 ```bash
 echo "Stop! Who goes there‽ Wait…" | ./smartypants.sh -s
