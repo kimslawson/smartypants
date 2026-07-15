@@ -100,10 +100,10 @@ Here is exactly what every single rule is doing, in order:
   Converts triple hyphens into long Em dashes (`—`) and double hyphens into medium En dashes (`–`).
 
 ### 2. Slang & Contractions (The Single Quotes)
-* **`-e "s/(^|[${spaces}(—-])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\1’\2\3/gi"`**
-  Finds common abbreviated slang words that start with an apostrophe (like *'twas*, *'tis*, *'cause*, *'em*, *'round*). It ignores case (`i`) and ensures the apostrophe curls right (`’`) rather than left (`‘`).
-* **`-e "s/([a-zA-Z0-9])'([a-zA-Z])/\1’\2/g"`**
-  Standard contractions and possessives. If an apostrophe is sandwiched tightly between alphanumeric characters (like *don't*, *it's*, or *user's*), it forces it to become a curly right apostrophe (`’`).
+* **`-e ":aphaeresis" ... -e "s/(^|[${spaces}(—-])'(${aphaeresis})(s?)([^a-zA-Z]|$)/\1’\2\3\4/g" ... -e "t aphaeresis"`**
+  Finds *aphaeresis* words — clipped forms that open with an elided-letter apostrophe (like *'twas*, *'tis*, *'cause*, *'em*, *'round*, *young 'uns*) — and curls the apostrophe right (`’`) rather than left (`‘`). The word list (`${aphaeresis}`) spells each letter as a two-case class (`[Tt][Ww][Aa][Ss]`), so matching is case-insensitive in **every** position (lower/UPPER/Title/MiXeD) *without* the non-portable `i`/`I` flag. Crucially, the rule anchors on a trailing word boundary (`([^a-zA-Z]|$)`) and allows only an optional plural `s`, so short forms like *'un* or *'ol* no longer swallow the opening quote of ordinary words (*'under*, *'only*, *'super*, *'forest*, *'old*) — those correctly stay left quotes. The rule sits in a `:aphaeresis`/`t aphaeresis` loop so that back-to-back clipped words separated by a single space (e.g. *'em 'round*) both get handled. (Branches live on their own `-e` args, which is the portable idiom BSD/macOS `sed` needs.)
+* **`-e ":contractions" -e "s/([a-zA-Z0-9])'([a-zA-Z])/\1’\2/g" -e "t contractions"`**
+  Standard contractions and possessives. If an apostrophe is sandwiched tightly between alphanumeric characters (like *don't*, *it's*, or *user's*), it forces it to become a curly right apostrophe (`’`). This one runs inside a `:contractions`/`t contractions` loop: a single global pass consumes the letter after each apostrophe, so in stacked forms like *Y'all'dn't've* the shared letters would strand every other apostrophe — the loop re-runs the rule until all of them curl. It terminates because each pass converts at least one straight `'` into a curly `’`, which the pattern no longer matches.
 * **`-e "s/'([0-9]{2})/’\1/g"`**
   Catches two-digit shorthand decades (like *'90s* or *'26*) and curls the apostrophe to the right (`’`), stopping it from mistakenly becoming a left quote.
 
