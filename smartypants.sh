@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# Force a UTF-8 locale so the multibyte glyph rules in fix_typography (and the
+# reverse rules in stupefy_typography) match correctly even when this script is
+# invoked from a non-UTF-8 shell (e.g. LANG=C). If the caller is already in a
+# UTF-8 locale we leave it untouched; otherwise we pick the first UTF-8 locale
+# the system actually provides — macOS ships en_US.UTF-8, many Linux distros
+# ship C.UTF-8/C.utf8. If none is found we proceed unchanged (best effort).
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+    *.UTF-8|*.utf-8|*.UTF8|*.utf8) : ;;
+    *)
+        _sp_avail=$(locale -a 2>/dev/null)
+        for _sp_loc in en_US.UTF-8 C.UTF-8 en_US.utf8 C.utf8; do
+            if printf '%s\n' "$_sp_avail" | grep -qxF "$_sp_loc"; then
+                export LC_ALL="$_sp_loc"
+                break
+            fi
+        done
+        unset _sp_avail _sp_loc
+        ;;
+esac
+
 # Default settings (smart mode, 1 space)
 MODE="smart"
 SPACE_REPLACEMENT=" "
@@ -28,6 +48,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Aphaeresis word list: clipped forms that open with an elided-letter apostrophe
+# (e.g. 'twas, 'tis, 'cause, 'em, 'round, young 'uns). Each letter is written as a
+# two-case character class ([Tt][Ww]...) so matching is case-insensitive in every
+# position — lower/UPPER/Title/MiXeD — WITHOUT relying on sed's non-portable "i"
+# flag. Keep entries as complete words; the rule below anchors on a word boundary
+# and allows an optional plural "s", so short forms like 'un no longer swallow the
+# opening quote of ordinary words ('under, 'only, 'super, 'forest, 'old).
+APHAERESIS='[Bb][Oo][Uu][Tt]|[Bb][Uu][Rr][Bb][Ss]|[Cc][Aa][Uu][Ss][Ee]|[Cc][Ee][Pp][Tt]|[Ee][Mm]|[Ee][Nn]|[Ff][Oo][Rr][Ee]|[Ff][Rr][Aa][Ii][Dd]|[Gg][Aa][Tt][Oo][Rr]|[Hh][Oo][Oo][Dd]|[Mm][Ii][Dd]|[Mm][Ii][Dd][Ss][Tt]|[Mm][Oo][Nn][Gg][Ss][Tt]|[Mm][Ee][Rr][Ii][Cc][Aa]|[Mm][Uu][Rr][Ii][Cc][Aa]|[Nn][Ee][Aa][Tt][Hh]|[Oo][Ll]|[Oo][Ll][Ee]|[Pp][Oo][Ss][Ss][Uu][Mm]|[Rr][Oo][Uu][Nn][Dd]|[Ss][Uu][Pp]|[Tt][Ii][Ll]|[Tt][Ii][Ss]|[Tt][Ww][Aa][Ss]|[Tt][Ww][Ee][Rr][Ee]|[Tt][Ww][Ii][Ll][Ll]|[Tt][Ww][Oo][Uu][Ll][Dd]|[Uu][Nn]'
+
 # Function to apply typographic fixes to a string/stream
 fix_typography() {
     local spaces=$(printf '\x20\x09\xc2\xa0')
@@ -38,8 +67,12 @@ fix_typography() {
         -e 's/\.\.\./…/g' \
         -e 's/---/—/g' \
         -e 's/--/–/g' \
-        -e "s/(^|[${spaces}(—-])'(twas|tis|cause|em|en|round|til|bout)([a-zA-Z]*)/\1’\2\3/gi" \
+        -e ':aphaeresis' \
+        -e "s/(^|[${spaces}(—-])'(${APHAERESIS})(s?)([^a-zA-Z]|$)/\1’\2\3\4/g" \
+        -e 't aphaeresis' \
+        -e ':contractions' \
         -e "s/([a-zA-Z0-9])'([a-zA-Z])/\1’\2/g" \
+        -e 't contractions' \
         -e "s/'([0-9]{2})/’\1/g" \
         -e "s/(^|[([{\\\"${spaces}—-])'([a-zA-Z0-9])/\\1‘\\2/g" \
         -e "s/([a-zA-Z0-9.,?!;:‽…])'([]}\\\"${spaces}—.,;:?!)]|$)/\\1’\\2/g" \
