@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# Force a UTF-8 locale so the multibyte glyph rules in fix_typography (and the
+# reverse rules in stupefy_typography) match correctly even when this script is
+# invoked from a non-UTF-8 shell (e.g. LANG=C). If the caller is already in a
+# UTF-8 locale we leave it untouched; otherwise we pick the first UTF-8 locale
+# the system actually provides — macOS ships en_US.UTF-8, many Linux distros
+# ship C.UTF-8/C.utf8. If none is found we proceed unchanged (best effort).
+case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+    *.UTF-8|*.utf-8|*.UTF8|*.utf8) : ;;
+    *)
+        _sp_avail=$(locale -a 2>/dev/null)
+        for _sp_loc in en_US.UTF-8 C.UTF-8 en_US.utf8 C.utf8; do
+            if printf '%s\n' "$_sp_avail" | grep -qxF "$_sp_loc"; then
+                export LC_ALL="$_sp_loc"
+                break
+            fi
+        done
+        unset _sp_avail _sp_loc
+        ;;
+esac
+
 # Default settings (smart mode, 1 space)
 MODE="smart"
 SPACE_REPLACEMENT=" "
